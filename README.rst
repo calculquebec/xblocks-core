@@ -1,6 +1,8 @@
-===============
-xblocks-contrib
-===============
+============
+xblocks-core
+============
+
+*Before Verawood, this repository was known as "xblocks-contrib"*
 
 This repository is the new home for XBlocks which are part of the base openedx-platform
 installation.
@@ -94,8 +96,8 @@ For information on how to enable translations, visit the `Open edX XBlock tutori
 
 The included Makefile contains targets for extracting, compiling and validating translatable strings.
 Each XBlock in this repository has its own translation configuration under
-``xblocks_contrib/<xblock>/conf/locale/`` and its own Transifex resource mapping under
-``xblocks_contrib/<xblock>/.tx/config``. All Make targets iterate over every XBlock automatically.
+``src/xblock_<name>/conf/locale/`` and its own Transifex resource mapping under
+``src/xblock_<name>/.tx/config``. All Make targets iterate over every XBlock automatically.
 
 The general steps to provide multilingual messages for a Python program (or an XBlock) are:
 
@@ -155,11 +157,11 @@ This iterates over every XBlock and:
 
 The output for each XBlock is a single file at::
 
-    xblocks_contrib/<xblock>/conf/locale/en/LC_MESSAGES/text.po
+    src/xblock_<name>/conf/locale/en/LC_MESSAGES/text.po
 
 Additionally, all per-xblock ``text.po`` files are merged into a single combined file at::
 
-    xblocks_contrib/conf/locale/en/LC_MESSAGES/django.po
+    src/xblocks_core_locale/conf/locale/en/LC_MESSAGES/django.po
 
 This combined file is used by the
 `openedx-translations <https://github.com/openedx/openedx-translations>`_ pipeline (OEP-58)

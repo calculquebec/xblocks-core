@@ -1,0 +1,35 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "webpack --config webpack.prod.config.js",
+    "build-dev": "webpack --config webpack.dev.config.js",
+    "watch-build-dev": "npm run build-dev -- --watch",
+    "test": "karma start karma.conf.js",
+    "test-ci": "xvfb-run --auto-servernum karma start karma.conf.js"
+  },
+  "devDependencies": {
+    "backbone": "^1",
+    "backbone-associations": "^0.6",
+    "backbone.paginator": "^2",
+    "append-prepend-loader": "^1.0.0",
+    "copy-webpack-plugin": "14.0.0",
+    "imports-loader": "^0.8",
+    "webpack": "^5",
+    "webpack-cli": "^5",
+    "webpack-merge": "^5",
+    "draggabilly": "^3.0.0",
+    "edx-ui-toolkit": "^1",
+    "jasmine-core": "2.6.4",
+    "jasmine-jquery": "git+https://git@github.com/velesin/jasmine-jquery.git#ebad463d592d3fea00c69f26ea18a930e09c7b58",
+    "jquery": "^2",
+    "karma": "^0.13",
+    "karma-chrome-launcher": "^3",
+    "karma-coverage": "^2",
+    "karma-firefox-launcher": "^2",
+    "karma-jasmine": "^0.3",
+    "karma-regex-preprocessor": "^1.0.1",
+    "karma-sourcemap-loader": "^0.4.0",
+    "karma-spec-reporter": "0.0.20",
+    "underscore": "^1"
+  }
+}

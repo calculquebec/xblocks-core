@@ -54,7 +54,7 @@ Both formats are supported by edx-platform's `XmlMixin`, which handles:
 - **Parsing:** detecting pointer tags and loading their definitions from the pointed-to file.
 - **Exporting:** serializing blocks in pointer format.
 
-However, this was disrupted when **built-in XBlocks** (such as `WordCloud`, `Annotatable`, `LTI`, `HTML`, `Poll`, `Video`, `Problem`) were **extracted from edx-platform** into a new repository: **xblocks-contrib**.
+However, this was disrupted when **built-in XBlocks** (such as `WordCloud`, `Annotatable`, `LTI`, `HTML`, `Poll`, `Video`, `Problem`) were **extracted from edx-platform** into a new repository: **xblocks-core**.
 
 The key architectural change was that **extracted XBlocks no longer depend on `XmlMixin`** and instead inherit directly from the base `XBlock` class — following the *pure XBlock* pattern.
 This transition removed pointer-tag handling functionality for those blocks.
@@ -115,4 +115,4 @@ References
 
 - `openedx/XBlock#830` - Initial attempt to add pointer-tag parsing to XBlock core
 - `openedx/edx-platform#37133` - Runtime-based pointer resolution PR
-- `xblocks_contrib` - Repository containing extracted XBlocks and new `PointerTagMixin`
+- `xblocks-core` - Repository containing extracted XBlocks and new `PointerTagMixin`

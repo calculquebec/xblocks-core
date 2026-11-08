@@ -7,7 +7,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: xblocks-contrib
+  name: xblocks-core
   annotations:
     openedx.org/component-type: "XBlock"
     openedx.org/arch-interest-groups: "feanil"

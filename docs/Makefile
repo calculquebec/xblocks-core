@@ -96,9 +96,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/xblocks-contrib.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/xblocks-core.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/xblocks-contrib.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/xblocks-core.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -115,8 +115,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/xblocks-contrib"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/xblocks-contrib"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/xblocks-core"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/xblocks-core"
 	@echo "# devhelp"
 
 .PHONY: epub

@@ -14,14 +14,14 @@ Project structure
 *****************
 Each XBlock in this repository manages its own translations independently:
 
-- **Config**: ``xblocks_contrib/<xblock>/conf/locale/config.yaml`` -- defines supported languages and
+- **Config**: ``src/xblock_<name>/conf/locale/config.yaml`` -- defines supported languages and
   ignored directories.
-- **Source strings**: ``xblocks_contrib/<xblock>/conf/locale/en/LC_MESSAGES/text.po`` -- extracted
+- **Source strings**: ``src/xblock_<name>/conf/locale/en/LC_MESSAGES/text.po`` -- extracted
   English strings (Python, HTML, and JavaScript combined into a single file).
-- **Transifex mapping**: ``xblocks_contrib/<xblock>/.tx/config`` -- maps the local ``conf/locale/``
+- **Transifex mapping**: ``src/xblock_<name>/.tx/config`` -- maps the local ``conf/locale/``
   paths to the Transifex resource for that XBlock.
-- **Combined source file**: ``xblocks_contrib/conf/locale/en/LC_MESSAGES/django.po`` -- all per-xblock
-  ``text.po`` files merged into one, used by the openedx-translations pipeline (OEP-58).
+- **Combined source file**: ``src/xblocks_core_locale/conf/locale/en/LC_MESSAGES/django.po`` -- all
+  per-xblock ``text.po`` files merged into one, used by the openedx-translations pipeline (OEP-58).
 
 All ``make`` targets iterate over every XBlock that has a ``conf/`` directory automatically.
 
@@ -37,7 +37,7 @@ the `openedx-translations`_ repository rather than directly via Transifex.
 
 1. A daily GitHub Actions workflow in openedx-translations clones this repo and runs
    ``make extract_translations``.
-2. The combined ``django.po`` file at ``xblocks_contrib/conf/locale/en/`` is committed to
+2. The combined ``django.po`` file at ``src/xblocks_core_locale/conf/locale/en/`` is committed to
    openedx-translations.
 3. The Transifex GitHub App syncs source strings to the ``openedx-translations`` Transifex project
    under the ``open-edx`` organization.

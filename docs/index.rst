@@ -1,10 +1,10 @@
-.. xblocks-contrib documentation top level file, created by
+.. xblocks-core documentation top level file, created by
    sphinx-quickstart on Thu Jul 04 13:23:33 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-xblocks-contrib
-===============
+xblocks-core
+============
 
 core xblocks
 

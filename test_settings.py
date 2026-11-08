@@ -1,5 +1,5 @@
 """
-Minimal Django settings for running tests on xblocks_contrib.
+Minimal Django settings for running tests on xblocks-core.
 """
 
 from pathlib import Path
@@ -51,7 +51,7 @@ ENABLE_CODEJAIL_REST_SERVICE = False
 
 # Set the python package.module.function that is reponsible of
 # calling the remote service in charge of jailed code execution
-CODE_JAIL_REST_SERVICE_REMOTE_EXEC = "xblocks_contrib.problem.capa.safe_exec.remote_exec.send_safe_exec_request_v0"
+CODE_JAIL_REST_SERVICE_REMOTE_EXEC = "xblock_problem.capa.safe_exec.remote_exec.send_safe_exec_request_v0"
 
 # Set the codejail remote service host
 CODE_JAIL_REST_SERVICE_HOST = "http://127.0.0.1:8550"
@@ -78,7 +78,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            BASE_DIR / "xblocks_contrib" / "problem" / "capa" / "templates",
+            BASE_DIR / "src" / "xblock_problem" / "capa" / "templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {

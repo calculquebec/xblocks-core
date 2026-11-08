@@ -2,23 +2,22 @@
 include LICENSE.txt README.rst
 
 # --- PACKAGE DATA ---
-recursive-include xblocks_contrib *.html *.js *.css *.jar *.png *.gif *.jpg *.jpeg *.svg *.yaml *.underscore
-recursive-include xblock_pdf *.html *.js *.css
+recursive-include src *.html *.js *.css *.jar *.png *.gif *.jpg *.jpeg *.svg *.yaml *.underscore
 
 # --- EXCLUSIONS ---
 # Prevent raw frontend source files and node_modules from bloating the Python wheel.
-prune xblocks_contrib/*/assets
-prune xblocks_contrib/*/node_modules
+prune src/*/assets
+prune src/*/node_modules
 global-exclude webpack*.config.js karma*.js package*.json package-lock.json .gitignore
 
 # Exclude top-level tests and JS specs by default to keep the distribution size small.
-# NOTE: The `*` here only looks one directory deep (e.g., `foo/tests`). 
-prune */tests
-prune */spec
+# NOTE: The `*` here only looks one directory deep (e.g., `foo/tests`).
+prune src/*/tests
+prune src/*/spec
 
 # Because MANIFEST.in does not support `**` (globstar) for infinite folder depth,
 # generic wildcards cannot reach deeply nested folders. We must explicitly prune
 # these deep directories to prevent them from being swept up by `recursive-include`.
-prune xblocks_contrib/problem/capa/static/js/capa/spec
-prune xblocks_contrib/problem/capa/static/js/capa/fixtures
-prune xblocks_contrib/problem/capa/tests/test_files
+prune src/xblock_problem/capa/static/js/capa/spec
+prune src/xblock_problem/capa/static/js/capa/fixtures
+prune src/xblock_problem/capa/tests/test_files

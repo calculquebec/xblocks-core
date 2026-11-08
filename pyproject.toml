@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xblocks-contrib"
+name = "xblocks-core"
 dynamic = ["version"]
 description = "core xblocks"
 readme = "README.rst"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["Python", "edx"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
@@ -56,29 +56,29 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/openedx/xblocks-contrib"
+Homepage = "https://github.com/openedx/xblocks-core"
 
 [project.entry-points."xblock.v1"]
 # _extracted suffix is added for testing only.
-_annotatable_extracted = "xblocks_contrib:AnnotatableBlock"
-_discussion_extracted = "xblocks_contrib:DiscussionXBlock"
-_html_extracted = "xblocks_contrib:HtmlBlock"
-_lti_extracted = "xblocks_contrib:LTIBlock"
-_poll_question_extracted = "xblocks_contrib:PollBlock"
-_problem_extracted = "xblocks_contrib:ProblemBlock"
-_video_extracted = "xblocks_contrib:VideoBlock"
-_word_cloud_extracted = "xblocks_contrib:WordCloudBlock"
+_annotatable_extracted = "xblock_annotatable:AnnotatableBlock"
+_discussion_extracted = "xblock_discussion:DiscussionXBlock"
+_html_extracted = "xblock_html:HtmlBlock"
+_lti_extracted = "xblock_lti:LTIBlock"
+_poll_question_extracted = "xblock_poll_question:PollBlock"
+_problem_extracted = "xblock_problem:ProblemBlock"
+_video_extracted = "xblock_video:VideoBlock"
+_word_cloud_extracted = "xblock_word_cloud:WordCloudBlock"
 # 'Done' XBlocks -- ones that are ready for general use today,
 # and have been migrated fully from edx-platform or their original repository.
 pdf = "xblock_pdf:PDFBlock"
 
 [project.entry-points."lms.djangoapp"]
-xblocks_contrib_problem_capa = "xblocks_contrib.problem.capa.apps:CapaAppConfig"
-xblocks_contrib_discussion = "xblocks_contrib.discussion.apps:DiscussionAppConfig"
+xblock_problem_capa = "xblock_problem.capa.apps:CapaAppConfig"
+xblock_discussion = "xblock_discussion.apps:DiscussionAppConfig"
 
 [project.entry-points."cms.djangoapp"]
-xblocks_contrib_problem_capa = "xblocks_contrib.problem.capa.apps:CapaAppConfig"
-xblocks_contrib_discussion = "xblocks_contrib.discussion.apps:DiscussionAppConfig"
+xblock_problem_capa = "xblock_problem.capa.apps:CapaAppConfig"
+xblock_discussion = "xblock_discussion.apps:DiscussionAppConfig"
 
 [dependency-groups]
 test-base = [
@@ -127,7 +127,7 @@ local_scheme = "no-local-version"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["xblocks_contrib*", "xblock_pdf*"]
+where = ["src"]
 exclude = ["*tests*"]
 
 [tool.setuptools.exclude-package-data]
@@ -174,15 +174,13 @@ indent-style = "space"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "test_settings"
 django_find_project = false
-addopts = "--cov xblocks_contrib --cov xblock_pdf --cov-report term-missing --cov-report xml"
-norecursedirs = [".*", "docs", "requirements", "site-packages"]
+pythonpath = [".", "src"]
+addopts = "--cov src --cov-report term-missing --cov-report xml"
+norecursedirs = [".*", "build", "docs", "requirements", "site-packages"]
 
 [tool.coverage.run]
 branch = true
-source = [
-    "xblocks_contrib",
-    "xblock_pdf",
-]
+source = ["src"]
 omit = [
     "*/tests/*",
     "*/migrations/*",
