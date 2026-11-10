@@ -11,6 +11,7 @@ import VideoProgressSlider from './06_video_progress_slider.js';
 import VideoVolumeControl from './07_video_volume_control.js';
 import VideoSpeedControl from './08_video_speed_control.js';
 import VideoAutoAdvanceControl from './08_video_auto_advance_control.js';
+import VideoAudioTrackControl from './08_video_audio_track_control.js';
 import VideoCaption from './09_video_caption.js';
 import VideoPlayPlaceholder from './09_play_placeholder.js';
 import VideoPlayPauseControl from './09_play_pause_control.js';
@@ -38,7 +39,7 @@ window.Video = function (runtime, element) {
         mainVideoModules = [
             FocusGrabber, VideoControl, VideoPlayPlaceholder,
             VideoPlayPauseControl, VideoProgressSlider, VideoSpeedControl,
-            VideoVolumeControl, VideoQualityControl, VideoFullScreen, VideoCaption, VideoCommands,
+            VideoVolumeControl, VideoQualityControl, VideoAudioTrackControl, VideoFullScreen, VideoCaption, VideoCommands,
             VideoContextMenu, VideoSaveStatePlugin, VideoEventsPlugin, VideoCompletionHandler, VideoTranscriptFeedback
         ].concat(autoAdvanceEnabled ? [VideoAutoAdvanceControl] : []),
         bumperVideoModules = [VideoControl, VideoPlaySkipControl, VideoSkipControl,

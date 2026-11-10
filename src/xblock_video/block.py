@@ -423,6 +423,7 @@ class VideoBlock(
             # front-end exists.
             "autohideHtml5": False,
             "autoplay": settings.FEATURES.get("AUTOPLAY_VIDEOS", False),
+            "audioTracks": self.audio_tracks,
             # This won't work when we move to data that
             # isn't on the filesystem
             "captionDataDir": getattr(self, "data_dir", None),
