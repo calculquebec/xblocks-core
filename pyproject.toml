@@ -72,6 +72,9 @@ _word_cloud_extracted = "xblocks_contrib:WordCloudBlock"
 # and have been migrated fully from edx-platform or their original repository.
 pdf = "xblock_pdf:PDFBlock"
 
+[project.entry-points."xblock.v1.overrides"]
+video = "xblocks_contrib:VideoBlock"
+
 [project.entry-points."lms.djangoapp"]
 xblocks_contrib_problem_capa = "xblocks_contrib.problem.capa.apps:CapaAppConfig"
 xblocks_contrib_discussion = "xblocks_contrib.discussion.apps:DiscussionAppConfig"

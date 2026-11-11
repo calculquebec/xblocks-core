@@ -64,6 +64,7 @@ from xblocks_contrib.video.video_transcripts_utils import (
 )
 from xblocks_contrib.video.video_utils import (
     create_youtube_string,
+    extract_audio_tracks_from_sources,
     format_xml_exception_message,
     get_edxval_api,
     get_poster,
@@ -368,12 +369,15 @@ class VideoBlock(
                     if new_url:
                         sources[index] = new_url
 
+        # Extract multi-audio track definitions from URL fragments/suffixes and clean URLs
+        sources, audio_tracks = extract_audio_tracks_from_sources(sources, self.audio_tracks)
+
         # If there was no edx_video_id, or if there was no download specified
         # for it, we fall back on whatever we find in the VideoBlock.
         if not download_video_link and self.download_video:
-            if self.html5_sources:
+            if sources:
                 # If there are multiple html5 sources, we use the first non HLS video urls
-                download_video_link = next((url for url in self.html5_sources if not url.endswith(".m3u8")), None)
+                download_video_link = next((url for url in sources if not url.endswith(".m3u8")), None)
 
         transcripts = self.get_transcripts_info()
         track_url, transcript_language, sorted_languages = self.get_transcripts_for_student(
@@ -427,6 +431,7 @@ class VideoBlock(
             # front-end exists.
             "autohideHtml5": False,
             "autoplay": settings.FEATURES.get("AUTOPLAY_VIDEOS", False),
+            "audioTracks": audio_tracks,
             # This won't work when we move to data that
             # isn't on the filesystem
             "captionDataDir": getattr(self, "data_dir", None),

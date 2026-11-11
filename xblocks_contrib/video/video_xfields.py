@@ -227,3 +227,17 @@ class VideoFields:
         scope=Scope.settings,
         default="",
     )
+    audio_tracks = List(
+        help=_(
+            "List of audio tracks for multilingual support. Each entry must be a dict with keys: "
+            "'lang' (BCP-47 language code, e.g. 'fr'), "
+            "'label' (human-readable name shown in the player UI, e.g. 'Français'), "
+            "and optionally 'src' (URL to a separate .mp4 file for this language — used when "
+            "serving different MP4 files per language). "
+            "If 'src' is omitted, the HLS audio-groups path is used: hls.js will switch audio "
+            "renditions by matching 'lang' against the HLS manifest's EXT-X-MEDIA LANGUAGE attribute."
+        ),
+        display_name=_("Audio Tracks"),
+        scope=Scope.settings,
+        default=[],
+    )

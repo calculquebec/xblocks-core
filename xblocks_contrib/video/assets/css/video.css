@@ -1258,3 +1258,74 @@
     text-decoration: none;
     color: var(--link-hover-color);
 }
+
+/* ===== Audio Track Control ===== */
+.video .secondary-controls .audio-tracks {
+    display: inline-block;
+    position: relative;
+}
+
+.video .secondary-controls .audio-track-button {
+    background: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 7px;
+    vertical-align: middle;
+}
+
+.video .secondary-controls .audio-track-button:hover,
+.video .secondary-controls .audio-track-button:focus {
+    color: #c8c8c8;
+    outline: none;
+}
+
+.video .secondary-controls .audio-track-button .label {
+    margin: 0 2px;
+}
+
+.video .secondary-controls .audio-track-button .value {
+    font-weight: 700;
+}
+
+.video .secondary-controls .audio-tracks .video-audio-tracks {
+    background: rgba(28, 28, 28, 0.9);
+    border-radius: 3px;
+    bottom: 100%;
+    display: none;
+    left: 50%;
+    list-style: none;
+    margin: 0 0 5px;
+    min-width: 100px;
+    padding: 5px 0;
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 3100;
+}
+
+.video .secondary-controls .audio-tracks .video-audio-tracks li {
+    padding: 0;
+    text-align: center;
+}
+
+.video .secondary-controls .audio-tracks .video-audio-tracks li a {
+    color: #fff;
+    display: block;
+    font-size: 12px;
+    padding: 5px 10px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.video .secondary-controls .audio-tracks .video-audio-tracks li a:hover,
+.video .secondary-controls .audio-tracks .video-audio-tracks li a:focus {
+    background: rgba(255, 255, 255, 0.1);
+    color: #c8c8c8;
+    outline: none;
+}
+
+.video .secondary-controls .audio-tracks .video-audio-tracks li.is-active a {
+    color: #6dcff6;
+    font-weight: 700;
+}

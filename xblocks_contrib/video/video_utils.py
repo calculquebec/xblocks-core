@@ -3,6 +3,7 @@ Module contains utils specific for video_block but not for transcripts.
 """
 
 import logging
+import re
 from collections import OrderedDict
 from urllib.parse import parse_qs, urlencode, urlparse, urlsplit, urlunsplit
 
@@ -10,6 +11,7 @@ import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.utils.translation import get_language_info
 from requests.exceptions import Timeout
 
 log = logging.getLogger(__name__)
@@ -205,3 +207,138 @@ def get_edxval_api():
         return edxval_api
     except ImportError:
         return None
+
+
+_FILENAME_LANG_SUFFIX_RE = re.compile(
+    r"[_.-](?P<lang>[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,4})?)\.(?:mp4|webm|ogv|ogg|m4v)$",
+    re.IGNORECASE,
+)
+
+
+def resolve_audio_track_label(lang_code, strict=False):
+    """
+    Resolve a human-readable native label (e.g. 'Français', 'English') for a BCP-47 language code.
+
+    When strict=True, returns None if the language code is not recognized.
+    When strict=False, falls back to the uppercase language code.
+    """
+    if not lang_code:
+        return None if strict else ""
+
+    lowercase_code = lang_code.lower()
+    language_dict = getattr(settings, "LANGUAGE_DICT", {})
+    if local_name := language_dict.get(lowercase_code):
+        return local_name[0].upper() + local_name[1:]
+
+    try:
+        lang_info = get_language_info(lang_code)
+        name_local = lang_info.get("name_local", "")
+        if name_local:
+            return name_local[0].upper() + name_local[1:]
+    except KeyError:
+        pass
+
+    for code, language_label in getattr(settings, "ALL_LANGUAGES", []):
+        if code.lower() == lowercase_code:
+            return language_label
+
+    if strict:
+        return None
+    return lang_code.upper()
+
+
+def extract_audio_tracks_from_sources(sources, explicit_audio_tracks=None):
+    """
+    Clean URL fragments from `sources` and derive `audioTracks` metadata when not explicitly set.
+
+    Supports configuring multi-audio tracks directly via Studio's "Video URL" and "Fallback videos"
+    fields (`html5_sources`):
+      1. Explicit `#lang=<code>` hash on each video URL:
+         - `https://.../video1.mp4#lang=fr`
+         - `https://.../video2.mp4#lang=en`
+      2. Filename language suffix across 2+ video URLs:
+         - `https://.../video_fr.mp4`
+         - `https://.../video_en.mp4`
+      3. HLS `.m3u8` URLs:
+         - Audio tracks are auto-discovered from `#EXT-X-MEDIA:TYPE=AUDIO` by `hls.js` on the client,
+           or can be specified via `https://.../master.m3u8#lang=fr,en`.
+
+    Language labels (e.g. 'Français', 'English') are resolved automatically from the language code.
+
+    Returns:
+        Tuple of (cleaned_sources, audio_tracks)
+    """
+    cleaned_sources = []
+    hls_fragment_tracks = []
+    explicit_fragment_tracks = []
+    inferred_suffix_tracks = []
+
+    for raw_url in sources or []:
+        if not raw_url:
+            continue
+
+        scheme, netloc, path, query, fragment = urlsplit(raw_url)
+        clean_url = urlunsplit((scheme, netloc, path, query, ""))
+        is_hls = path.lower().endswith(".m3u8")
+
+        fragment_handled = False
+        if fragment:
+            qs = parse_qs(fragment, keep_blank_values=False)
+            if "lang" in qs:
+                fragment_handled = True
+                lang_param = qs["lang"][0].strip()
+                if is_hls and "," in lang_param:
+                    for code in lang_param.split(","):
+                        code = code.strip()
+                        if code:
+                            hls_fragment_tracks.append(
+                                {"lang": code, "label": resolve_audio_track_label(code)}
+                            )
+                else:
+                    track_entry = {
+                        "lang": lang_param,
+                        "label": resolve_audio_track_label(lang_param),
+                    }
+                    if not is_hls:
+                        track_entry["src"] = clean_url
+                    explicit_fragment_tracks.append(track_entry)
+
+        final_url = clean_url if fragment_handled else raw_url
+        cleaned_sources.append(final_url)
+
+        if not fragment_handled and not is_hls:
+            filename = path.rsplit("/", 1)[-1]
+            match = _FILENAME_LANG_SUFFIX_RE.search(filename)
+            if match:
+                lang = match.group("lang")
+                label = resolve_audio_track_label(lang, strict=True)
+                if label:
+                    inferred_suffix_tracks.append(
+                        {
+                            "lang": lang.lower(),
+                            "label": label,
+                            "src": final_url,
+                        }
+                    )
+
+    if explicit_audio_tracks:
+        return cleaned_sources, explicit_audio_tracks
+
+    if len(hls_fragment_tracks) >= 2:
+        return cleaned_sources, hls_fragment_tracks
+
+    distinct_explicit_langs = {t["lang"].lower() for t in explicit_fragment_tracks}
+    if len(explicit_fragment_tracks) >= 2 and len(distinct_explicit_langs) >= 2:
+        return cleaned_sources, explicit_fragment_tracks
+
+    non_hls_sources = [s for s in cleaned_sources if not s.lower().split("?", 1)[0].endswith(".m3u8")]
+    distinct_inferred_langs = {t["lang"].lower() for t in inferred_suffix_tracks}
+    if (
+        len(inferred_suffix_tracks) >= 2
+        and len(inferred_suffix_tracks) == len(non_hls_sources)
+        and len(distinct_inferred_langs) >= 2
+    ):
+        return cleaned_sources, inferred_suffix_tracks
+
+    return cleaned_sources, []
+
