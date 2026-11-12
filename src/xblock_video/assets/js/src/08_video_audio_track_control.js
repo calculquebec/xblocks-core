@@ -2,6 +2,7 @@
 
 import HtmlUtils from 'edx-ui-toolkit/js/utils/html-utils';
 import Iterator from './00_iterator.js';
+import LanguagePreference from './00_language_preference.js';
 
 /**
  * Video Audio Track Control module.
@@ -76,27 +77,68 @@ VideoAudioTrackControl.prototype = {
     ].join(''),
 
     destroy: function() {
-        this.el.off({
-            mouseenter: this.mouseEnterHandler,
-            mouseleave: this.mouseLeaveHandler,
-            click: this.clickMenuHandler,
-            keydown: this.keyDownMenuHandler
-        });
+        if (this.el) {
+            this.el.off({
+                mouseenter: this.mouseEnterHandler,
+                mouseleave: this.mouseLeaveHandler,
+                click: this.clickMenuHandler,
+                keydown: this.keyDownMenuHandler
+            });
+            this.closeMenu(true);
+            this.tracksContainer.remove();
+            this.el.remove();
+        }
         this.state.el.off('destroy', this.destroy);
-        this.closeMenu(true);
-        this.tracksContainer.remove();
-        this.el.remove();
         delete this.state.videoAudioTrackControl;
     },
 
     initialize: function() {
+        let self = this;
         let tracks = this.state.config.audioTracks;
+        let player = this.state.videoPlayer && this.state.videoPlayer.player;
+        let hls = player && player.hls;
 
-        // Show the control only when there are at least 2 tracks defined.
-        if (!tracks || tracks.length < 2) {
-            return false;
+        // If tracks are already provided via config (from #lang=..., _fr.mp4/_en.mp4, or OLX),
+        // mount immediately.
+        if (tracks && tracks.length >= 2) {
+            this._mountControl(tracks);
+            if (hls) {
+                this._applySavedTrackWhenHLSReady(hls);
+            } else if (player && this.currentTrack && this.currentTrack.src && this.currentTrack.src !== tracks[0].src) {
+                this._applyInitialSource(player, this.currentTrack.src);
+            }
+            return true;
         }
 
+        // Otherwise, if playing an HLS stream (.m3u8), auto-discover audio tracks from the manifest.
+        if (hls) {
+            if (hls.audioTracks && hls.audioTracks.length >= 2) {
+                let discovered = this._extractTracksFromHLS(hls.audioTracks);
+                if (discovered.length >= 2) {
+                    this._mountControl(discovered);
+                    this._switchViaHLS(hls, this.currentTrack.lang);
+                    return true;
+                }
+            }
+            let onHlsTracksReady = function() {
+                if (self.el || !hls.audioTracks || hls.audioTracks.length < 2) {
+                    return;
+                }
+                let discovered = self._extractTracksFromHLS(hls.audioTracks);
+                if (discovered.length >= 2) {
+                    self._mountControl(discovered);
+                    self._switchViaHLS(hls, self.currentTrack.lang);
+                }
+            };
+            hls.on('hlsManifestParsed', onHlsTracksReady);
+            hls.on('hlsAudioTracksUpdated', onHlsTracksReady);
+            return true;
+        }
+
+        return false;
+    },
+
+    _mountControl: function(tracks) {
         // Stamp unique id into template
         let html = this.template.replace(/\{id\}/g, this.state.id);
         this.el = $(html);
@@ -104,8 +146,14 @@ VideoAudioTrackControl.prototype = {
         this.trackButton = this.el.find('.audio-track-button');
 
         // Restore previously saved language preference, or fall back to first track.
-        let savedLang = this.state.storage.getItem('audio_track_lang');
-        this.currentTrack = _.find(tracks, function(t) { return t.lang === savedLang; }) || tracks[0];
+        let savedLang = (this.state.storage.getItem('audio_track_lang') || '').toLowerCase();
+        let preferredLang = LanguagePreference.resolve('audio', _.pluck(tracks, 'lang'));
+        if (preferredLang) {
+            savedLang = preferredLang.toLowerCase();
+        }
+        this.currentTrack = _.find(tracks, function(t) {
+            return (t.lang || '').toLowerCase() === savedLang;
+        }) || tracks[0];
 
         this.render(tracks);
         this.bindHandlers();
@@ -120,8 +168,68 @@ VideoAudioTrackControl.prototype = {
         }
 
         this.state.el.on('destroy', this.destroy);
+    },
 
-        return true;
+    _extractTracksFromHLS: function(hlsAudioTracks) {
+        let seenLangs = {};
+        let tracks = [];
+        _.each(hlsAudioTracks, function(t, idx) {
+            let lang = (t.lang || t.language || t.name || String(t.id !== undefined ? t.id : idx)).trim();
+            let key = lang.toLowerCase();
+            if (seenLangs[key]) {
+                return;
+            }
+            seenLangs[key] = true;
+            let label = '';
+            try {
+                if (typeof Intl !== 'undefined' && Intl.DisplayNames) {
+                    let dn = new Intl.DisplayNames([lang], {type: 'language'});
+                    let resolved = dn.of(lang);
+                    if (resolved && resolved.toLowerCase() !== key) {
+                        label = resolved.charAt(0).toUpperCase() + resolved.slice(1);
+                    }
+                }
+            } catch (e) {
+                // Ignore Intl errors for non-standard language tags
+            }
+            if (!label) {
+                let rawName = (t.name || '').trim();
+                label = rawName ? (rawName.charAt(0).toUpperCase() + rawName.slice(1)) : lang.toUpperCase();
+            }
+            tracks.push({
+                lang: lang,
+                label: label,
+                src: ''
+            });
+        });
+        return tracks;
+    },
+
+    _applySavedTrackWhenHLSReady: function(hls) {
+        let self = this;
+        let apply = function() {
+            if (self.currentTrack && hls.audioTracks && hls.audioTracks.length >= 2) {
+                self._switchViaHLS(hls, self.currentTrack.lang);
+            }
+        };
+        if (hls.audioTracks && hls.audioTracks.length >= 2) {
+            apply();
+        } else {
+            hls.on('hlsManifestParsed', _.once(apply));
+        }
+    },
+
+    _applyInitialSource: function(player, src) {
+        if (!player || !player.video) {
+            return;
+        }
+        let sep = src.indexOf('?') === -1 ? '?' : '&';
+        let urlWithTimestamp = src + sep + '_t=' + Date.now();
+        if (player.videoEl) {
+            player.videoEl.find('source').first().attr('src', urlWithTimestamp);
+        }
+        player.video.src = urlWithTimestamp;
+        player.video.load();
     },
 
     /**
@@ -134,13 +242,13 @@ VideoAudioTrackControl.prototype = {
             return HtmlUtils.interpolateHtml(
                 HtmlUtils.HTML(
                     '<li role="menuitem" class="' + (isCurrent ? 'is-active' : '') + '">' +
-                    '<a href="#" class="control" ' +
+                    '<button type="button" class="control audio-option" ' +
                     'data-lang="{lang}" ' +
                     'data-src="{src}" ' +
                     'aria-checked="{checked}" ' +
                     'role="menuitemradio">' +
                     '{label}' +
-                    '</a></li>'
+                    '</button></li>'
                 ),
                 {
                     lang: track.lang,
@@ -159,7 +267,7 @@ VideoAudioTrackControl.prototype = {
         this.trackButton.find('.value').text(this.currentTrack.label);
 
         // Build an Iterator over the menu items for keyboard navigation
-        this.trackIterator = new Iterator(this.tracksContainer.find('a').toArray());
+        this.trackIterator = new Iterator(this.tracksContainer.find('.audio-option').toArray());
     },
 
     bindHandlers: function() {
@@ -170,8 +278,8 @@ VideoAudioTrackControl.prototype = {
             keydown: this.keyDownMenuHandler
         });
 
-        this.tracksContainer.on('click', 'a', this.clickTrackHandler);
-        this.tracksContainer.on('keydown', 'a', this.keyDownTrackHandler);
+        this.tracksContainer.on('click', '.audio-option', this.clickTrackHandler);
+        this.tracksContainer.on('keydown', '.audio-option', this.keyDownTrackHandler);
     },
 
     // -------------------------------------------------------------------------
@@ -204,7 +312,7 @@ VideoAudioTrackControl.prototype = {
         // Update state and UI
         this.currentTrack = {lang: lang, label: label, src: src};
         this.trackButton.find('.value').text(label);
-        this.tracksContainer.find('a').each(function() {
+        this.tracksContainer.find('.audio-option').each(function() {
             let isThis = $(this).data('lang') === lang;
             $(this)
                 .attr('aria-checked', isThis ? 'true' : 'false')
@@ -213,6 +321,7 @@ VideoAudioTrackControl.prototype = {
 
         // Persist preference in player storage
         this.state.storage.setItem('audio_track_lang', lang);
+        LanguagePreference.remember('audio', lang);
 
         // Notify other modules (e.g. analytics)
         this.state.el.trigger('audio_track:changed', {lang: lang, label: label, path: hlsInstance && !src ? 'hls' : 'source-swap'});
@@ -250,6 +359,7 @@ VideoAudioTrackControl.prototype = {
      * @param {string} src     URL to the .mp4 for this language
      */
     _switchViaSourceSwap: function(player, src) {
+        let self = this;
         let video = player.video;
         let currentTime = video.currentTime || 0;
         let wasPlaying = !video.paused;
@@ -271,6 +381,10 @@ VideoAudioTrackControl.prototype = {
         video.addEventListener('loadedmetadata', function handler() {
             video.removeEventListener('loadedmetadata', handler);
 
+            if (self.state.speed && $.isFunction(player.setPlaybackRate)) {
+                player.setPlaybackRate(self.state.speed);
+            }
+
             // Clamp restore time to new video duration
             let seekTo = Math.min(currentTime, video.duration || 0);
             video.currentTime = seekTo;
@@ -291,19 +405,21 @@ VideoAudioTrackControl.prototype = {
     // -------------------------------------------------------------------------
 
     openMenu: function() {
+        this.el.addClass('is-opened');
         this.trackButton.attr('aria-expanded', 'true');
         this.tracksContainer.show();
         // Focus the currently active item
-        let activeLink = this.tracksContainer.find('li.is-active a');
-        if (activeLink.length) {
-            activeLink.focus();
-            this.trackIterator.setCurrent(activeLink[0]);
+        let activeOption = this.tracksContainer.find('li.is-active .audio-option');
+        if (activeOption.length) {
+            activeOption.focus();
+            this.trackIterator.setCurrent(activeOption[0]);
         } else {
-            this.tracksContainer.find('a').first().focus();
+            this.tracksContainer.find('.audio-option').first().focus();
         }
     },
 
     closeMenu: function(immediate) {
+        this.el.removeClass('is-opened');
         this.trackButton.attr('aria-expanded', 'false');
         if (immediate) {
             this.tracksContainer.hide();
@@ -322,8 +438,8 @@ VideoAudioTrackControl.prototype = {
     // -------------------------------------------------------------------------
 
     clickMenuHandler: function(event) {
-        // Clicks on track links are handled by clickTrackHandler
-        if ($(event.target).closest('a').length) {
+        // Clicks on track options are handled by clickTrackHandler
+        if ($(event.target).closest('.audio-option').length) {
             return;
         }
         event.preventDefault();

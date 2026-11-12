@@ -506,7 +506,8 @@
 }
 
 .video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .speed-option,
-.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .control-lang {
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .control-lang,
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .audio-option {
     text-align: left;
     display: block;
     width: 100%;
@@ -525,13 +526,16 @@
 .video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .speed-option:hover,
 .video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .speed-option:focus,
 .video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .control-lang:hover,
-.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .control-lang:focus {
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .control-lang:focus,
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .audio-option:hover,
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li .audio-option:focus {
     background-color: #4f595d;
     color: #fcfcfc;
 }
 
 .video .video-wrapper .video-controls .secondary-controls .menu-container .menu li.is-active .speed-option,
-.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li.is-active .control-lang {
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li.is-active .control-lang,
+.video .video-wrapper .video-controls .secondary-controls .menu-container .menu li.is-active .audio-option {
     border-left: calc(var(--baseline, 20px) / 10) solid #90d7f9;
     font-weight: var(--font-bold, 700);
     color: #90d7f9;
@@ -543,6 +547,7 @@
 
 .video .video-wrapper .video-controls .secondary-controls .speeds,
 .video .video-wrapper .video-controls .secondary-controls .lang,
+.video .video-wrapper .video-controls .secondary-controls .audio-tracks,
 .video .video-wrapper .video-controls .secondary-controls .grouped-controls {
     display: inline-block;
 }
@@ -1260,72 +1265,31 @@
 }
 
 /* ===== Audio Track Control ===== */
-.video .secondary-controls .audio-tracks {
-    display: inline-block;
-    position: relative;
+.video .video-wrapper .video-controls .secondary-controls .audio-tracks .audio-track-button .label {
+    padding: 0 calc((var(--baseline, 20px) / 3)) 0 0;
+    font-family: var(--font-family-sans-serif);
+    color: #e7ecee;
 }
 
-.video .secondary-controls .audio-track-button {
-    background: transparent;
-    border: 0;
-    color: #fff;
-    cursor: pointer;
-    font-size: 12px;
-    padding: 5px 7px;
-    vertical-align: middle;
+@media (max-width: 1120px) {
+    .video .video-wrapper .video-controls .secondary-controls .audio-tracks .audio-track-button .label {
+        position: absolute;
+        clip: rect(1px, 1px, 1px, 1px);
+    }
 }
 
-.video .secondary-controls .audio-track-button:hover,
-.video .secondary-controls .audio-track-button:focus {
-    color: #c8c8c8;
-    outline: none;
+.video .video-wrapper .video-controls .secondary-controls .audio-tracks .audio-track-button .value {
+    padding: 0 lh(0.5) 0 0;
+    color: #e7ecee;
+    font-weight: bold;
 }
 
-.video .secondary-controls .audio-track-button .label {
-    margin: 0 2px;
+@media (max-width: 1120px) {
+    .video .video-wrapper .video-controls .secondary-controls .audio-tracks .audio-track-button .value {
+        padding: 0 lh(0.5);
+    }
 }
 
-.video .secondary-controls .audio-track-button .value {
-    font-weight: 700;
-}
-
-.video .secondary-controls .audio-tracks .video-audio-tracks {
-    background: rgba(28, 28, 28, 0.9);
-    border-radius: 3px;
-    bottom: 100%;
-    display: none;
-    left: 50%;
-    list-style: none;
-    margin: 0 0 5px;
-    min-width: 100px;
-    padding: 5px 0;
-    position: absolute;
-    transform: translateX(-50%);
-    z-index: 3100;
-}
-
-.video .secondary-controls .audio-tracks .video-audio-tracks li {
-    padding: 0;
-    text-align: center;
-}
-
-.video .secondary-controls .audio-tracks .video-audio-tracks li a {
-    color: #fff;
-    display: block;
-    font-size: 12px;
-    padding: 5px 10px;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.video .secondary-controls .audio-tracks .video-audio-tracks li a:hover,
-.video .secondary-controls .audio-tracks .video-audio-tracks li a:focus {
-    background: rgba(255, 255, 255, 0.1);
-    color: #c8c8c8;
-    outline: none;
-}
-
-.video .secondary-controls .audio-tracks .video-audio-tracks li.is-active a {
-    color: #6dcff6;
-    font-weight: 700;
+.video .video-wrapper .video-controls .secondary-controls .audio-tracks .video-audio-tracks {
+    min-width: 110px;
 }
