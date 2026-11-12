@@ -237,13 +237,13 @@ VideoAudioTrackControl.prototype = {
             return HtmlUtils.interpolateHtml(
                 HtmlUtils.HTML(
                     '<li role="menuitem" class="' + (isCurrent ? 'is-active' : '') + '">' +
-                    '<a href="#" class="control" ' +
+                    '<button type="button" class="control audio-option" ' +
                     'data-lang="{lang}" ' +
                     'data-src="{src}" ' +
                     'aria-checked="{checked}" ' +
                     'role="menuitemradio">' +
                     '{label}' +
-                    '</a></li>'
+                    '</button></li>'
                 ),
                 {
                     lang: track.lang,
@@ -262,7 +262,7 @@ VideoAudioTrackControl.prototype = {
         this.trackButton.find('.value').text(this.currentTrack.label);
 
         // Build an Iterator over the menu items for keyboard navigation
-        this.trackIterator = new Iterator(this.tracksContainer.find('a').toArray());
+        this.trackIterator = new Iterator(this.tracksContainer.find('.audio-option').toArray());
     },
 
     bindHandlers: function() {
@@ -273,8 +273,8 @@ VideoAudioTrackControl.prototype = {
             keydown: this.keyDownMenuHandler
         });
 
-        this.tracksContainer.on('click', 'a', this.clickTrackHandler);
-        this.tracksContainer.on('keydown', 'a', this.keyDownTrackHandler);
+        this.tracksContainer.on('click', '.audio-option', this.clickTrackHandler);
+        this.tracksContainer.on('keydown', '.audio-option', this.keyDownTrackHandler);
     },
 
     // -------------------------------------------------------------------------
@@ -307,7 +307,7 @@ VideoAudioTrackControl.prototype = {
         // Update state and UI
         this.currentTrack = {lang: lang, label: label, src: src};
         this.trackButton.find('.value').text(label);
-        this.tracksContainer.find('a').each(function() {
+        this.tracksContainer.find('.audio-option').each(function() {
             let isThis = $(this).data('lang') === lang;
             $(this)
                 .attr('aria-checked', isThis ? 'true' : 'false')
@@ -399,19 +399,21 @@ VideoAudioTrackControl.prototype = {
     // -------------------------------------------------------------------------
 
     openMenu: function() {
+        this.el.addClass('is-opened');
         this.trackButton.attr('aria-expanded', 'true');
         this.tracksContainer.show();
         // Focus the currently active item
-        let activeLink = this.tracksContainer.find('li.is-active a');
-        if (activeLink.length) {
-            activeLink.focus();
-            this.trackIterator.setCurrent(activeLink[0]);
+        let activeOption = this.tracksContainer.find('li.is-active .audio-option');
+        if (activeOption.length) {
+            activeOption.focus();
+            this.trackIterator.setCurrent(activeOption[0]);
         } else {
-            this.tracksContainer.find('a').first().focus();
+            this.tracksContainer.find('.audio-option').first().focus();
         }
     },
 
     closeMenu: function(immediate) {
+        this.el.removeClass('is-opened');
         this.trackButton.attr('aria-expanded', 'false');
         if (immediate) {
             this.tracksContainer.hide();
@@ -430,8 +432,8 @@ VideoAudioTrackControl.prototype = {
     // -------------------------------------------------------------------------
 
     clickMenuHandler: function(event) {
-        // Clicks on track links are handled by clickTrackHandler
-        if ($(event.target).closest('a').length) {
+        // Clicks on track options are handled by clickTrackHandler
+        if ($(event.target).closest('.audio-option').length) {
             return;
         }
         event.preventDefault();
