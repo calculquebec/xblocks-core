@@ -2,6 +2,7 @@
 
 import HtmlUtils from 'edx-ui-toolkit/js/utils/html-utils';
 import Iterator from './00_iterator.js';
+import LanguagePreference from './00_language_preference.js';
 
 /**
  * Video Audio Track Control module.
@@ -146,6 +147,10 @@ VideoAudioTrackControl.prototype = {
 
         // Restore previously saved language preference, or fall back to first track.
         let savedLang = (this.state.storage.getItem('audio_track_lang') || '').toLowerCase();
+        let preferredLang = LanguagePreference.resolve('audio', _.pluck(tracks, 'lang'));
+        if (preferredLang) {
+            savedLang = preferredLang.toLowerCase();
+        }
         this.currentTrack = _.find(tracks, function(t) {
             return (t.lang || '').toLowerCase() === savedLang;
         }) || tracks[0];
@@ -316,6 +321,7 @@ VideoAudioTrackControl.prototype = {
 
         // Persist preference in player storage
         this.state.storage.setItem('audio_track_lang', lang);
+        LanguagePreference.remember('audio', lang);
 
         // Notify other modules (e.g. analytics)
         this.state.el.trigger('audio_track:changed', {lang: lang, label: label, path: hlsInstance && !src ? 'hls' : 'source-swap'});

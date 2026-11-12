@@ -15,6 +15,7 @@ import VideoPlayer from './03_video_player.js';
 import i18n from './00_i18n.js';
 import _ from 'underscore';
 import moment from 'moment';
+import LanguagePreference from './00_language_preference.js';
 
 /**
  * @function
@@ -790,6 +791,15 @@ function getCurrentLanguage() {
     let keys = _.keys(this.config.transcriptLanguages);
 
     if (keys.length) {
+        if (!this._languagePreferenceApplied) {
+            // Follow the Open edX language preference (or the learner's
+            // last explicit choice) on first use.
+            this._languagePreferenceApplied = true;
+            let preferred = LanguagePreference.resolve('transcript', keys);
+            if (preferred) {
+                this.lang = preferred;
+            }
+        }
         if (!_.contains(keys, this.lang)) {
             if (_.contains(keys, 'en')) {
                 this.lang = 'en';

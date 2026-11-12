@@ -2,6 +2,7 @@
 
 import _ from 'underscore';
 import { convert, format, formatFull } from './utils/time.js';
+import LanguagePreference from './00_language_preference.js';
 
 
 /**
@@ -89,6 +90,7 @@ SaveStatePlugin.prototype = {
 
     onLanguageChange: function(event, langCode) {
         this.state.storage.setItem('language', langCode);
+        LanguagePreference.remember('transcript', langCode);
     },
 
     onYoutubeAvailability: function(event, youtubeIsAvailable) {
